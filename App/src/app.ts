@@ -1,6 +1,8 @@
 import express from 'express';
 
 import router from "./api/router";
+import {metrics} from "./api/routes/metrics.route";
+import {routeTimerMetric} from "./api/middlewares/route-timer-metric.middleware";
 
 class App {
     public server;
@@ -10,15 +12,18 @@ class App {
 
         this.middlewares();
         this.routes();
+
         console.info("Server instantiated");
     }
 
     middlewares() {
         this.server.use(express.json());
+        this.server.use(routeTimerMetric);
     }
 
     routes() {
-        this.server.use(router);
+        this.server.get("/metrics", metrics);
+        this.server.use("/api", router);
     }
 }
 

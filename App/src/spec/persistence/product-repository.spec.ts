@@ -28,6 +28,14 @@ describe("Product Entity Repository", () => {
         expect(repository.products.length).toEqual(10000);
     })
 
+    it("Should return all products", () => {
+        const products = [createProductEntity(), createProductEntity(), createProductEntity()];
+        repository.products = products;
+
+        expect(repository.getAllProducts().length).toEqual(3);
+        expect(repository.getAllProducts()).toEqual(products);
+    })
+
     it("Should save multiple products", () => {
         const newProduct1 = createProductEntity();
         const newProduct2 = createProductEntity();

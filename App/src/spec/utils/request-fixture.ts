@@ -3,6 +3,10 @@ import {v4 as uuidV4} from "uuid";
 import {ProductEntity} from "../../api/entities/product.entity";
 
 export class RequestFixture {
+    static getEmptyRequest(): Request {
+        return {} as unknown as Request
+    }
+
     static getRequestWithProductIdParam(id: string): Request{
         return {
             params: {

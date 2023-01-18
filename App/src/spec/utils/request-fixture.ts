@@ -42,4 +42,17 @@ export class RequestFixture {
             }
         } as unknown as Request
     }
+
+    static getRequestWithBodyAndParamsFromProductEntity(product: ProductEntity): Request {
+        return {
+            body: {
+                name: product.name,
+                price: product.price,
+                categories: product.categories
+            },
+            params: {
+                productId: product.id
+            }
+        } as unknown as Request
+    }
 }

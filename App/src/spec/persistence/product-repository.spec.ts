@@ -20,6 +20,14 @@ describe("Product Entity Repository", () => {
         expect(repository.products[0]).toEqual(newProduct);
     })
 
+    it("Should save 10000 products at maximum", () => {
+        for (let i = 0; i < 11000; i++){
+            repository.saveProduct(createProductEntity());
+        }
+
+        expect(repository.products.length).toEqual(10000);
+    })
+
     it("Should save multiple products", () => {
         const newProduct1 = createProductEntity();
         const newProduct2 = createProductEntity();

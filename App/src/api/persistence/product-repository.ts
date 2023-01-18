@@ -16,11 +16,14 @@ export class ProductRepository {
     }
 
     saveProduct(productToSave: ProductEntity): void {
-        const productIndex = this.products.findIndex(product => product.id === productToSave.id);
-        if (productIndex === -1){
-            this.products.push(productToSave);
-        } else {
-            this.products[productIndex] = productToSave
+        // Set a max size for the catalog
+        if (this.products.length < 10000) {
+            const productIndex = this.products.findIndex(product => product.id === productToSave.id);
+            if (productIndex === -1){
+                this.products.push(productToSave);
+            } else {
+                this.products[productIndex] = productToSave
+            }
         }
     }
 

@@ -1,0 +1,7 @@
+version: '3.8'
+
+services:
+  backend:
+    build: App/
+    ports:
+      - 127.0.0.1:3000:3000

@@ -11,7 +11,7 @@ const httpRequestTimer = new Histogram({
 
 register.registerMetric(httpRequestTimer);
 
-export async function routeTimerMetric(req: Request, res: Response, next: NextFunction){
+export async function routeMetricGatherer(req: Request, res: Response, next: NextFunction){
     const end = httpRequestTimer.startTimer();
     const originalUrl = req.originalUrl;
     const method = req.method;

@@ -2,7 +2,9 @@ import express from 'express';
 
 import router from "./api/router";
 import {metrics} from "./api/routes/metrics.route";
-import {routeTimerMetric} from "./api/middlewares/route-timer-metric.middleware";
+import {routeMetricGatherer} from "./api/middlewares/route-metric-gatherer.middleware";
+import {occasionalFailSimulator} from "./api/middlewares/occasional-fail-simulator.middleware";
+import {occasionalDelaySimulator} from "./api/middlewares/occasional-delay-simulator.middleware";
 
 class App {
     public server;
@@ -18,7 +20,9 @@ class App {
 
     middlewares() {
         this.server.use(express.json());
-        this.server.use(routeTimerMetric);
+        this.server.use(routeMetricGatherer);
+        this.server.use(occasionalFailSimulator);
+        this.server.use(occasionalDelaySimulator);
     }
 
     routes() {

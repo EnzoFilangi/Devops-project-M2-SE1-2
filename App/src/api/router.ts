@@ -7,6 +7,7 @@ import {addProduct} from "./routes/add-product.route";
 import {deleteProduct} from "./routes/delete-product.route";
 import {updateProduct} from "./routes/update-product.route";
 import {causeErrorFiveHundred} from "./routes/cause-error-five-hundred.route";
+import {slow} from "./routes/slow.route";
 
 const repository = new ProductRepository()
 const router = Router();
@@ -18,5 +19,6 @@ router.get("/products/:productId", (req, res) => getProduct(req, res, repository
 router.delete("/products/:productId", (req, res) => deleteProduct(req, res, repository))
 router.put("/products/:productId", (req, res) => updateProduct(req, res, repository))
 router.use("/fail", causeErrorFiveHundred)
+router.use("/slow", slow)
 
 export default router;

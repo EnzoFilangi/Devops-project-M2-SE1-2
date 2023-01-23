@@ -12,21 +12,25 @@ class App {
     constructor() {
         this.server = express();
 
+        this.routesWithoutMiddleware();
         this.middlewares();
         this.routes();
 
         console.info("Server instantiated");
     }
 
+    routesWithoutMiddleware(){
+        this.server.get("/metrics", metrics);
+    }
+
     middlewares() {
         this.server.use(express.json());
         this.server.use(routeMetricGatherer);
-        this.server.use(occasionalFailSimulator);
         this.server.use(occasionalDelaySimulator);
+        this.server.use(occasionalFailSimulator);
     }
 
     routes() {
-        this.server.get("/metrics", metrics);
         this.server.use("/api", router);
     }
 }

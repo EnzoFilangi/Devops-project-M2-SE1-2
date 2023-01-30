@@ -9,6 +9,9 @@ on:
     branches: [ "main" ]
     paths:
       - 'App/**'
+  # Run directly from the actions tab
+  workflow_dispatch:
+  # Run from another workflow
   workflow_call:
     outputs:
       job-status: 

@@ -17,6 +17,10 @@ on:
       job-status: 
         value: ${{ jobs.test.outputs.job-status }}
         
+defaults:
+  run:
+    working-directory: App
+        
 jobs:
   test:
     runs-on: ubuntu-latest
@@ -24,11 +28,13 @@ jobs:
       job-status: ${{ job.status }}
     steps:
     - uses: actions/checkout@v3
-    - name: Unit tests
+    - name: Use Node.js
       uses: actions/setup-node@v3
       with:
-        node-version: 16
+        node-version: 16.x
         cache: 'npm'
         cache-dependency-path: App/package-lock.json
-    - run: npm ci
-    - run: npm test
+    - name: Install dependencies
+      run: npm ci
+    - name: Run tests
+      run: npm test

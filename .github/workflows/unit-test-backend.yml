@@ -1,0 +1,29 @@
+name: Unit test backend
+
+on:
+  push:
+    branches: [ "main" ]
+    paths: 
+      - "App/**"
+  pull_request:
+    branches: [ "main" ]
+    paths:
+      - 'App/**'
+  workflow_call:
+    outputs:
+      job-status: 
+        value: ${{ jobs.test.outputs.job-status }}
+        
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    outputs:
+      job-status: ${{ job.status }}
+    steps:
+    - uses: actions/checkout@v3
+    - name: Unit tests
+    - uses: actions/setup-node@v3
+      with:
+        node-version: 16
+    - run: npm ci
+    - run: npm test

@@ -3,7 +3,7 @@ version: '3.8'
 services:
   backend:
     image: enzofilangi/devops-m2
-    container_name: devops-backend-prod
+    container_name: devops-backend-pre-prod
     ports:
       - 127.0.0.1:20000:3000
     expose:

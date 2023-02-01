@@ -1,0 +1,40 @@
+name: Unit test backend
+
+on:
+  push:
+    branches: [ "main" ]
+    paths: 
+      - "App/**"
+  pull_request:
+    branches: [ "main" ]
+    paths:
+      - 'App/**'
+  # Run directly from the actions tab
+  workflow_dispatch:
+  # Run from another workflow
+  workflow_call:
+    outputs:
+      job-status: 
+        value: ${{ jobs.test.outputs.job-status }}
+        
+defaults:
+  run:
+    working-directory: App
+        
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    outputs:
+      job-status: ${{ job.status }}
+    steps:
+    - uses: actions/checkout@v3
+    - name: Use Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: 16.x
+        cache: 'npm'
+        cache-dependency-path: App/package-lock.json
+    - name: Install dependencies
+      run: npm ci
+    - name: Run tests
+      run: npm test

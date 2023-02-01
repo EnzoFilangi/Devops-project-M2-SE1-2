@@ -1,0 +1,100 @@
+# Reference : https://www.andreyponomarev.ru/articles/2021-02-12-ci-cd-for-vps-with-github-actions.html
+name: Deploy to pre-production
+
+# Controls when the workflow will run
+on:
+  # Triggers the workflow on push or pull request events but only for the main branch
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
+jobs:
+  run-backend-tests:
+    uses: ./.github/workflows/unit-test-backend.yml
+    
+  push-to-docker-hub:
+    # Build Docker image and push to Docker Hub only if the app build and test is successfull
+    needs: [run-backend-tests]
+    outputs:
+      job-status: ${{ job.status }}
+    if: ${{ success() }}
+    
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v3
+        
+      - name: Login to DockerHub
+        uses: docker/login-action@v1
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Build and push
+        uses: docker/build-push-action@v2
+        with:
+          context: ./App
+          file: ./App/Dockerfile
+          push: true
+          tags: ${{ secrets.DOCKERHUB_USERNAME }}/devops-m2:latest
+        
+  deploy-pre-prod:
+    needs: [run-backend-tests, push-to-docker-hub]
+    outputs:
+      job-status: ${{ job.status }}
+    if: ${{ success() }}
+
+    runs-on: ubuntu-latest
+    steps:    
+      - name: Invoke deployment hook
+        uses: distributhor/workflow-webhook@v2
+        env:
+          webhook_url: https://webhooks.enzofilangi.fr/hooks/deploy-devops-pre-prod
+          webhook_secret: ${{ secrets.WEBHOOK_SECRET }}
+  
+  notify-success:
+    needs: [run-backend-tests, push-to-docker-hub, deploy-pre-prod]
+    if: ${{ success() }}
+    
+    runs-on: ubuntu-latest
+    steps:
+      - name: notify success on discord
+        uses: tsickert/discord-webhook@v4.0.0
+        with:
+          webhook-url: ${{ secrets.DISCORD_WEBHOOK }}
+          embed-title: "✅ Deployment succeeded ✅"
+          # Green : https://gist.github.com/thomasbnt/b6f455e2c7d743b796917fa3c205f812
+          embed-color: 3066993
+          embed-description: |
+            Job statuses :
+            
+            - Backend tests: ✅
+            
+            - Build and push to DockerHub: ✅
+            
+            - Deployment to pre-production environment: ✅
+          
+  notify-failure:
+    needs: [run-backend-tests, push-to-docker-hub, deploy-pre-prod]
+    if: ${{ failure() }}
+    
+    runs-on: ubuntu-latest
+    steps:
+      - name: notify failure on discord
+        uses: tsickert/discord-webhook@v4.0.0
+        with:
+          webhook-url: ${{ secrets.DISCORD_WEBHOOK }}
+          embed-title: "❌ Deployment failed ❌"
+          # Red : https://gist.github.com/thomasbnt/b6f455e2c7d743b796917fa3c205f812
+          embed-color: 15158332
+          embed-description: |
+            Job statuses :
+            
+            - Backend tests: ${{ needs.run-backend-tests.outputs.job-status == 'success' && '✅' || '❌' }}
+            
+            - Build and push to DockerHub: ${{ needs.push-to-docker-hub.outputs.job-status == 'success' && '✅' || '❌' }}
+            
+            - Deployment to pre-production environment: ${{ needs.deploy-pre-prod.outputs.job-status == 'success' && '✅' || '❌' }}

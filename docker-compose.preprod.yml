@@ -2,8 +2,10 @@ version: '3.8'
 
 services:
   backend:
-    build: App/
+    image: enzofilangi/devops-m2
+    container_name: devops-backend-prod
     ports:
       - 127.0.0.1:20000:3000
     expose:
       - 3000
+    restart: unless-stopped

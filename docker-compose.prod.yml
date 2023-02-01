@@ -10,17 +10,19 @@ volumes:
 
 services:
   backend:
-    build: App/
+    image: enzofilangi/devops-m2
+    container_name: devops-backend-prod
     ports:
       - 127.0.0.1:20000:3000
     expose:
       - 3000
     networks:
       - monitoring
+    restart: unless-stopped
 
   prometheus:
     image: prom/prometheus:latest
-    container_name: prometheus
+    container_name: prometheus-prod
     volumes:
       - ./prometheus:/etc/prometheus
       - prometheus_data:/prometheus
@@ -30,13 +32,14 @@ services:
       - 9090
     networks:
       - monitoring
+    restart: unless-stopped
 
   grafana:
     image: grafana/grafana:latest
-    container_name: grafana
+    container_name: grafana-prod
     volumes:
-      - grafana_data:/var/lib/grafana
       - ./grafana/provisioning:/etc/grafana/provisioning
+      - grafana_data:/var/lib/grafana
     environment:
       - GF_SECURITY_ADMIN_PASSWORD=acfc54b5660e48f6aeff60c6f3d1f04e
     ports:
@@ -45,3 +48,4 @@ services:
       - 3000
     networks:
       - monitoring
+    restart: unless-stopped

@@ -1,0 +1,55 @@
+name: Deploy to production
+
+# Controls when the workflow will run
+on:
+  # Only run this manually when the pre-prod environment passes all tests
+  workflow_dispatch:
+  
+jobs:
+  deploy-prod:
+    outputs:
+      job-status: ${{ job.status }}
+      
+    runs-on: ubuntu-latest
+    steps:    
+      - name: Invoke deployment hook
+        uses: distributhor/workflow-webhook@v2
+        env:
+          webhook_url: https://webhooks.enzofilangi.fr/hooks/deploy-devops-prod
+          webhook_secret: ${{ secrets.WEBHOOK_SECRET }}
+  
+  notify-success:
+    needs: [deploy-prod]
+    if: ${{ success() }}
+    
+    runs-on: ubuntu-latest
+    steps:
+      - name: notify success on discord
+        uses: tsickert/discord-webhook@v4.0.0
+        with:
+          webhook-url: ${{ secrets.DISCORD_WEBHOOK }}
+          embed-title: "✅ Production deployment succeeded ✅"
+          # Green : https://gist.github.com/thomasbnt/b6f455e2c7d743b796917fa3c205f812
+          embed-color: 3066993
+          embed-description: |
+            Job statuses :
+            
+            - Deployment to production environment: ✅
+          
+  notify-failure:
+    needs: [deploy-prod]
+    if: ${{ failure() }}
+    
+    runs-on: ubuntu-latest
+    steps:
+      - name: notify failure on discord
+        uses: tsickert/discord-webhook@v4.0.0
+        with:
+          webhook-url: ${{ secrets.DISCORD_WEBHOOK }}
+          embed-title: "❌ Production deployment failed ❌"
+          # Red : https://gist.github.com/thomasbnt/b6f455e2c7d743b796917fa3c205f812
+          embed-color: 15158332
+          embed-description: |
+            Job statuses :
+            
+            - Deployment to production environment: ❌

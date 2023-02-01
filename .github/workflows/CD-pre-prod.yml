@@ -1,5 +1,5 @@
 # Reference : https://www.andreyponomarev.ru/articles/2021-02-12-ci-cd-for-vps-with-github-actions.html
-name: Deploy
+name: Deploy to pre-production
 
 # Controls when the workflow will run
 on:
@@ -15,7 +15,7 @@ jobs:
   run-backend-tests:
     uses: ./.github/workflows/unit-test-backend.yml
     
-  push_to_docker_hub:
+  push-to-docker-hub:
     # Build Docker image and push to Docker Hub only if the app build and test is successfull
     needs: [run-backend-tests]
     outputs:
@@ -40,9 +40,9 @@ jobs:
           file: ./App/Dockerfile
           push: true
           tags: ${{ secrets.DOCKERHUB_USERNAME }}/devops-m2:latest
-          
-  deploy:
-    needs: [run-backend-tests, push_to_docker_hub]
+        
+  deploy-pre-prod:
+    needs: [run-backend-tests, push-to-docker-hub]
     outputs:
       job-status: ${{ job.status }}
     if: ${{ success() }}
@@ -53,7 +53,7 @@ jobs:
         run: echo "TODO"
   
   notify-success:
-    needs: [run-backend-tests, push_to_docker_hub, deploy]
+    needs: [run-backend-tests, push-to-docker-hub, deploy-pre-prod]
     if: ${{ success() }}
     
     runs-on: ubuntu-latest
@@ -72,10 +72,10 @@ jobs:
             
             - Build and push to DockerHub: ✅
             
-            - Deployment: ✅
+            - Deployment to pre-production environment: ✅
           
   notify-failure:
-    needs: [run-backend-tests, push_to_docker_hub, deploy]
+    needs: [run-backend-tests, push-to-docker-hub, deploy-pre-prod]
     if: ${{ failure() }}
     
     runs-on: ubuntu-latest
@@ -92,6 +92,6 @@ jobs:
             
             - Backend tests: ${{ needs.run-backend-tests.outputs.job-status == 'success' && '✅' || '❌' }}
             
-            - Build and push to DockerHub: ${{ needs.push_to_docker_hub.outputs.job-status == 'success' && '✅' || '❌' }}
+            - Build and push to DockerHub: ${{ needs.push-to-docker-hub.outputs.job-status == 'success' && '✅' || '❌' }}
             
-            - Deployment: ${{ needs.deploy.outputs.job-status == 'success' && '✅' || '❌' }}
+            - Deployment to pre-production environment: ${{ needs.deploy-pre-prod.outputs.job-status == 'success' && '✅' || '❌' }}
